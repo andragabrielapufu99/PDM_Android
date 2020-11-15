@@ -1,7 +1,7 @@
 package com.example.puffy.myapplication.todo.data
 
 data class Item (
-    val id : Int,
+    var id : Int,
     var title : String,
     var artist : String,
     var year : Int,

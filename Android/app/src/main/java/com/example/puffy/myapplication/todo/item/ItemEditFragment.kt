@@ -11,9 +11,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import androidx.navigation.fragment.findNavController
 import com.example.puffy.myapplication.R
+import com.example.puffy.myapplication.common.RemoteDataSource
 import com.example.puffy.myapplication.todo.data.Item
+import com.example.puffy.myapplication.todo.items.ItemListViewModel
 import kotlinx.android.synthetic.main.fragment_item_edit.*
-import kotlinx.android.synthetic.main.fragment_item_list.*
 
 class ItemEditFragment  : Fragment(){
 
@@ -24,7 +25,7 @@ class ItemEditFragment  : Fragment(){
     private lateinit var viewModel: ItemEditViewModel
     private var itemId : Int? = -1
     private var item : Item? = null
-
+    private  lateinit var viewListModel : ItemListViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.v("ItemEditFragment", "onCreate")
@@ -52,11 +53,14 @@ class ItemEditFragment  : Fragment(){
             Log.v("ItemEditFragment","update item")
             val i = item
             if(i!=null){
-                println(i.id)
-                println(i.toString())
                 i.title = itemTitle.text.toString()
                 i.artist = itemArtist.text.toString()
-                i.year = itemYear.text.toString().toInt()
+                try {
+                    i.year = itemYear.text.toString().toInt()
+                }catch(e : NumberFormatException){
+                    i.year = -1;
+                }
+
                 i.genre = itemGenre.text.toString()
                 viewModel.saveOrUpdateItem(i)
             }
@@ -74,18 +78,16 @@ class ItemEditFragment  : Fragment(){
         viewModel.exception.observe(viewLifecycleOwner) { exception ->
             if (exception != null) {
                 Log.v("ItemEditFragment", "update fetching error")
-                val message = "Fetching exception ${exception.message}"
-                val parentActivity = activity?.parent
-                if (parentActivity != null) {
-                    Toast.makeText(parentActivity, message, Toast.LENGTH_SHORT).show()
-                }
+                Toast.makeText(activity,exception.message,Toast.LENGTH_LONG).show()
             }
         }
 
         viewModel.completed.observe(viewLifecycleOwner) { completed ->
             if (completed) {
                 Log.v("ItemEditFragment", "completed, navigate back")
-                findNavController().popBackStack()
+                if(viewModel.exception.value == null){
+                    findNavController().popBackStack()
+                }
             }
         }
 

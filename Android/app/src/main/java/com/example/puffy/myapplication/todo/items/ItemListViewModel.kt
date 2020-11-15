@@ -7,10 +7,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.puffy.myapplication.common.MyResult
+import com.example.puffy.myapplication.common.RemoteDataSource
 import com.example.puffy.myapplication.todo.data.Item
 import com.example.puffy.myapplication.todo.data.remote.ItemApi
+import com.google.gson.JsonParser
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import retrofit2.HttpException
 
 class ItemListViewModel(application: Application) : AndroidViewModel(application) {
     private val mutableItems = MutableLiveData<List<Item>>().apply { value = null }
@@ -31,8 +34,11 @@ class ItemListViewModel(application: Application) : AndroidViewModel(application
             val result : List<Item> = ItemApi.service.getAll()
             mutableItems.value = result
             return MyResult.Success(result)
-        }catch (e : Exception){
-            return MyResult.Error(e)
+        }catch (e : HttpException){
+            val message : String? = e.response()?.errorBody()?.string()
+            val m = JsonParser().parse(message)
+            val ex = Exception(m.asJsonObject["message"].asString)
+            return MyResult.Error(ex)
         }
     }
 

@@ -2,15 +2,21 @@ package com.example.puffy.myapplication.todo.item
 
 import android.app.Application
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.puffy.myapplication.common.MyResult
+import com.example.puffy.myapplication.common.RemoteDataSource
 import com.example.puffy.myapplication.todo.data.Item
 import com.example.puffy.myapplication.todo.data.remote.ItemApi
+import com.google.gson.JsonParser
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.json.JSONObject
+import retrofit2.HttpException
+
 
 class ItemEditViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -27,38 +33,44 @@ class ItemEditViewModel(application: Application) : AndroidViewModel(application
     init {
     }
 
-    suspend fun getItemById(id : Int) : LiveData<Item>{
-        Log.v("ItemEditViewModel","getItemById")
+    suspend fun getItemById(id: Int) : LiveData<Item>{
+        Log.v("ItemEditViewModel", "getItemById")
         val item : Item = ItemApi.service.getOne(id)
         mutableItem.value = item
         return itemLive
     }
 
-    suspend fun addItem(item : Item) : MyResult<Item>{
-        Log.v("ItemEditViewModel","addItem")
+    suspend fun addItem(item: Item) : MyResult<Item>{
+        Log.v("ItemEditViewModel", "addItem")
         try{
             val r : Item = ItemApi.service.addItem(item)
             return MyResult.Success(r)
-        }catch (e : Exception){
-            return MyResult.Error(e)
+        }catch (e: HttpException){
+            val message : String? = e.response()?.errorBody()?.string()
+            val m = JsonParser().parse(message)
+            val ex = Exception(m.asJsonObject["message"].asString)
+            return MyResult.Error(ex)
         }
     }
 
-    suspend fun updateItem(id : Int, item : Item) : MyResult<Item> {
-        Log.v("ItemEditViewModel","updateItem")
+    suspend fun updateItem(id: Int, item: Item) : MyResult<Item> {
+        Log.v("ItemEditViewModel", "updateItem")
         try{
-            val r : Item = ItemApi.service.updateItem(id,item)
+            val r : Item = ItemApi.service.updateItem(id, item)
             return MyResult.Success(r)
-        }catch (e : Exception){
-            return MyResult.Error(e)
+        }catch (e: HttpException){
+            val message : String? = e.response()?.errorBody()?.string()
+            val m = JsonParser().parse(message)
+            val ex = Exception(m.asJsonObject["message"].asString)
+            return MyResult.Error(ex)
         }
     }
 
-    fun getById(id : Int) = runBlocking<LiveData<Item>> {
+    fun getById(id: Int) = runBlocking<LiveData<Item>> {
         getItemById(id)
     }
 
-    fun saveOrUpdateItem(item : Item) {
+    fun saveOrUpdateItem(item: Item) {
         viewModelScope.launch {
             Log.v("ItemEditViewModel", "saveOrUpdateItem...")
             mutableFetching.value = true
@@ -80,6 +92,7 @@ class ItemEditViewModel(application: Application) : AndroidViewModel(application
             }
             mutableCompleted.value = true
             mutableFetching.value = false
+
         }
     }
 }
