@@ -57,11 +57,20 @@ app.use(async(ctx,next) => {
     try{
         await next();
     }catch(err){
+        ctx.response.body = {message : err.message || 'Unexpected error'};
         ctx.response.status = 500;
     }
 });
 
 const router = new Router();
+
+const broadcast = data => {
+    webSocketServer.clients.forEach(client => {
+        if(client.readyState === WebSocket.OPEN){
+            client.send(JSON.stringify(data));
+        }
+    });
+};
 
 router.get('/api/items', async(ctx) => {
     console.log("GET /api/items");
@@ -75,6 +84,7 @@ router.get('/api/items/:id', async(ctx) => {
     console.log(`GET /api/items/${itemId}`);
     const item = await Items.findOne({'id' : itemId});
     if(item == null){
+        ctx.response.body = { message : `Item with id ${itemId} was not found`};
         ctx.response.status = 404; //NOT FOUND
         return;
     }
@@ -110,6 +120,7 @@ async function generateId(){
     const result = await Items.insertMany(validItem);
     ctx.response.body = JSON.stringify(result[0]);
     ctx.response.status = 201;
+    broadcast({event : 'created', message : `A new item was added to list.`, item : result[0]});
  }
 
 router.post('/api/items',async(ctx) => {
@@ -136,12 +147,14 @@ router.post('/api/items',async(ctx) => {
     }
     
     if(errors != ""){
+        ctx.response.body = { message : errors};
         ctx.response.status = 400; //BAD REQUEST
         return;
     }
 
     const result = await Items.find({'title':item.title,'artist':item.artist});
     if(result.length > 0){
+        ctx.response.body = {message : 'This item was already inserted!'};
         ctx.response.status = 400; //BAD REQUEST
         return;
     }
@@ -180,6 +193,7 @@ router.put('/api/items/:id',async(ctx) => {
     }
 
     if(errors != ""){
+        ctx.response.body = { message : errors};
         ctx.response.status = 400; //BAD REQUEST
         return;
     }
@@ -187,11 +201,13 @@ router.put('/api/items/:id',async(ctx) => {
     const updatedItem = await Items.updateOne({'id' : idSearched},item);
     if(updatedItem['n'] == 0){
         //item doesn't exist
+        ctx.response.body = { error : `Item with id ${idSearched} was not found!` };
         ctx.response.status = 404; //NOT FOUND
         return;
     }
     ctx.response.body = JSON.stringify(item);
     ctx.response.status = 200; //OK
+    broadcast({event : 'updated', message : `The item with id ${idSearched} was updated.`, item : item});
 });
 
 app.use(router.routes());
