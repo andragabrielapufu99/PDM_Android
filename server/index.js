@@ -57,7 +57,6 @@ app.use(async(ctx,next) => {
     try{
         await next();
     }catch(err){
-        ctx.response.body = { issue : [{error : err.message || 'Unexpected error'}]};
         ctx.response.status = 500;
     }
 });
@@ -76,7 +75,6 @@ router.get('/api/items/:id', async(ctx) => {
     console.log(`GET /api/items/${itemId}`);
     const item = await Items.findOne({'id' : itemId});
     if(item == null){
-        ctx.response.body = { issue : [{ error : `Item with id ${itemId} was not found`}]};
         ctx.response.status = 404; //NOT FOUND
         return;
     }
@@ -138,14 +136,12 @@ router.post('/api/items',async(ctx) => {
     }
     
     if(errors != ""){
-        ctx.response.body = { issue : [{ error : errors}]};
         ctx.response.status = 400; //BAD REQUEST
         return;
     }
 
     const result = await Items.find({'title':item.title,'artist':item.artist});
     if(result.length > 0){
-        ctx.response.body = { issue : [{error : 'This item was already inserted!'}]};
         ctx.response.status = 400; //BAD REQUEST
         return;
     }
@@ -184,7 +180,6 @@ router.put('/api/items/:id',async(ctx) => {
     }
 
     if(errors != ""){
-        ctx.response.body = { issue : [{ error : errors}]};
         ctx.response.status = 400; //BAD REQUEST
         return;
     }
@@ -192,7 +187,6 @@ router.put('/api/items/:id',async(ctx) => {
     const updatedItem = await Items.updateOne({'id' : idSearched},item);
     if(updatedItem['n'] == 0){
         //item doesn't exist
-        ctx.response.body = { issue : [{ error : `Item with id ${idSearched} was not found!` }]};
         ctx.response.status = 404; //NOT FOUND
         return;
     }
