@@ -4,6 +4,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.SearchView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -49,6 +50,23 @@ class ItemListFragment : Fragment() {
             itemsModel.logout()
             findNavController().navigate(R.id.fragment_login)
         }
+
+        searchBar.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                itemListAdapter.items = itemsModel.refreshLocal()!!
+                if (newText != null) {
+                    if(!itemListAdapter.filterByText(newText)){
+                        Toast.makeText(activity,"Nothing found... Back to default data",Toast.LENGTH_SHORT).show()
+                    }
+                }
+                return false
+            }
+
+        });
     }
 
     private fun setupItemList(){
@@ -59,6 +77,7 @@ class ItemListFragment : Fragment() {
         itemsModel.items.observe(viewLifecycleOwner) {
             Log.v("ItemListFragment", "update items")
             itemListAdapter.items = it
+            println("Size : ${it.size}")
         }
 
         itemsModel.loading.observe(viewLifecycleOwner) {

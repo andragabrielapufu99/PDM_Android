@@ -1,5 +1,6 @@
 package com.example.puffy.myapplication.todo.data
 
+import android.app.LauncherActivity
 import androidx.lifecycle.LiveData
 import com.example.puffy.myapplication.auth.data.TokenHolder
 import com.example.puffy.myapplication.common.MyResult
@@ -69,5 +70,9 @@ class ItemRepository(private val itemDao: ItemDao) {
 
     suspend fun deleteAllItemsLocal(){
         itemDao.deleteAll()
+    }
+
+    fun refreshLocal() : LiveData<List<Item>>{
+        return items
     }
 }

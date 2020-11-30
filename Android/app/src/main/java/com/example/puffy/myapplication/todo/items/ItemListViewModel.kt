@@ -29,12 +29,17 @@ class ItemListViewModel(application: Application) : AndroidViewModel(application
 
     val itemRepository : ItemRepository
     val tokenDao = TodoDatabase.getDatabase(application,viewModelScope).tokenDao()
+
     init {
         Log.v("ItemListViewModel","init")
         val itemDao = TodoDatabase.getDatabase(application, viewModelScope).itemDao()
         itemRepository = ItemRepository(itemDao)
         items = itemRepository.items
         CoroutineScope(Dispatchers.Main).launch { ws() }
+    }
+
+    fun refreshLocal() : List<Item>? {
+        return itemRepository.items.value
     }
 
     fun refresh() {

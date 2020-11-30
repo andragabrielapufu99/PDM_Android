@@ -10,9 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.puffy.myapplication.R
-import com.example.puffy.myapplication.common.RemoteDataSource
 import com.example.puffy.myapplication.todo.data.Item
-import com.example.puffy.myapplication.todo.data.ItemRepository
 
 import com.example.puffy.myapplication.todo.item.ItemEditFragment
 import kotlinx.android.synthetic.main.view_item_list.view.*
@@ -26,7 +24,6 @@ class ItemListAdapter(
                 field = value
                 notifyDataSetChanged()
             }
-
     private lateinit var onItemClick : View.OnClickListener
 
     init {
@@ -61,5 +58,19 @@ class ItemListAdapter(
         holder.itemView.tag = item
         holder.textView.text = item.toString()
         holder.itemView.setOnClickListener(onItemClick)
+    }
+
+    fun filterByText(text : String) : Boolean{
+        var newItems : MutableList<Item> = ArrayList()
+        items.forEach { item ->
+            if(item.title.contains(text) || item.artist.contains(text) || item.genre.contains(text) || item.year.toString().contains(text)){
+                newItems.add(item)
+            }
+        }
+        if(newItems.size > 0){
+            items = newItems
+            return true
+        }
+        return false
     }
 }
