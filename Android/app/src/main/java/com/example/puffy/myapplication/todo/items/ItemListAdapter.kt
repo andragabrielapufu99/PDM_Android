@@ -6,15 +6,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.puffy.myapplication.R
+import com.example.puffy.myapplication.common.RemoteDataSource
 import com.example.puffy.myapplication.todo.data.Item
+import com.example.puffy.myapplication.todo.data.ItemRepository
+
 import com.example.puffy.myapplication.todo.item.ItemEditFragment
 import kotlinx.android.synthetic.main.view_item_list.view.*
-import kotlin.properties.Delegates.observable
+
 
 class ItemListAdapter(
     private val fragment: Fragment
@@ -26,11 +28,6 @@ class ItemListAdapter(
             }
 
     private lateinit var onItemClick : View.OnClickListener
-    var messageNotify: String by observable("") { _, oldValue, newValue ->
-        onValueChanged?.invoke(oldValue, newValue)
-    }
-
-    var onValueChanged: ((String, String) -> Unit)? = null
 
     init {
         //click on an item
@@ -65,9 +62,4 @@ class ItemListAdapter(
         holder.textView.text = item.toString()
         holder.itemView.setOnClickListener(onItemClick)
     }
-
-    fun setMessage(message : String){
-        messageNotify = message
-    }
-
 }

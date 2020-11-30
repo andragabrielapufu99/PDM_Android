@@ -2,8 +2,14 @@
     <string name="app_name">Music Store</string>
     <string name="label_fragment_item_list">Item List</string>
     <string name="fragment_item_list">Item List Fragment</string>
-    <string name="artist">artist</string>
-    <string name="title">title</string>
-    <string name="year">year</string>
-    <string name="genre">genre</string>
+    <string name="fragment_login">Login Fragment</string>
+    <string name="artist">Artist</string>
+    <string name="title">Title</string>
+    <string name="year">Year</string>
+    <string name="genre">Genre</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="welcomeLabel">Welcome!</string>
+    <string name="logout">Logout</string>
 </resources>

@@ -11,10 +11,6 @@ object ItemApi {
         @Headers("Accept: application/json")
         suspend fun getAll() : List<Item>
 
-        @GET("/api/items/{id}")
-        @Headers("Accept: application/json")
-        suspend fun getOne(@Path("id") itemId : Int) : Item
-
         @POST("/api/items")
         @Headers("Content-Type: application/json", "Accept: application/json")
         suspend fun addItem(@Body item : Item) : Item
@@ -24,5 +20,5 @@ object ItemApi {
         suspend fun updateItem(@Path("id") itemId : Int, @Body item : Item) : Item
     }
 
-    val service : Service = Api.retrofit.create(Service::class.java);
+    val service : Service = Api.retrofit.create(Service::class.java)
 }

@@ -4,34 +4,34 @@ import android.util.Log
 import com.example.puffy.myapplication.todo.data.Item
 import com.example.puffy.myapplication.todo.items.ItemListAdapter
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.JsonObject
 import okhttp3.*
 import okio.ByteString
 import org.json.JSONObject
 
 object RemoteDataSource {
     val eventChannel = Channel<String>()
-    lateinit var adapter: ItemListAdapter
 
     init {
-        //val request = Request.Builder().url("ws://192.168.1.101:3000").build() //Cluj
-        val request = Request.Builder().url("ws://192.168.1.102:3000").build() //Mioveni
+        val request = Request.Builder().url("ws://${Api.baseURL}").build()
         val webSocket = OkHttpClient().newWebSocket(request, MyWebSocketListener())
-    }
-
-    fun setItems(adapter: ItemListAdapter){
-        this.adapter = adapter
     }
 
     private class MyWebSocketListener : WebSocketListener() {
         override fun onOpen(webSocket: WebSocket, response: Response) {
             Log.d("WebSocket","onOpen")
+            val jsonToken = JSONObject()
+            jsonToken.put("token",Api.tokenInterceptor.token)
+            val jsonObj = JSONObject()
+            jsonObj.put("type","authorization")
+            jsonObj.put("payload",jsonToken)
+            webSocket.send(jsonObj.toString())
         }
 
         override fun onMessage(webSocket: WebSocket, text: String) {
             Log.d("WebSocket","onMessage $text")
-            var jsonObj : JSONObject = JSONObject(text)
-            var message : String = jsonObj["message"] as String
-            adapter.setMessage(message)
+            runBlocking { eventChannel.send(text) }
         }
 
         override fun onMessage(webSocket: WebSocket, bytes: ByteString) {

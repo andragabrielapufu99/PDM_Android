@@ -17,6 +17,12 @@
     </fragment>
 
     <fragment
+        android:id="@+id/fragment_login"
+        android:name="com.example.puffy.myapplication.auth.login.LoginFragment"
+        android:label="@string/fragment_login"
+        tools:layout="@layout/fragment_login"/>
+
+    <fragment
         android:id="@+id/fragment_item_edit"
         android:name="com.example.puffy.myapplication.todo.item.ItemEditFragment"
         android:label="Item Edit"

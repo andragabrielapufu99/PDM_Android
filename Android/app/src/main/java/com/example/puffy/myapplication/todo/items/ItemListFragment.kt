@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import androidx.navigation.fragment.findNavController
 import com.example.puffy.myapplication.R
+import com.example.puffy.myapplication.auth.data.AuthRepository
 import com.example.puffy.myapplication.common.RemoteDataSource
 import kotlinx.android.synthetic.main.fragment_item_list.*
 
@@ -35,10 +36,18 @@ class ItemListFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         Log.v("ItemListFragment", "onActivityCreated")
+        if(!AuthRepository.isAuthenticated){
+            findNavController().navigate(R.id.fragment_login)
+            return
+        }
         setupItemList()
         fab.setOnClickListener {
             Log.v("ItemListFragment", "add new item")
             findNavController().navigate(R.id.fragment_item_edit)
+        }
+        logoutBtn.setOnClickListener {
+            itemsModel.logout()
+            findNavController().navigate(R.id.fragment_login)
         }
     }
 
@@ -46,36 +55,23 @@ class ItemListFragment : Fragment() {
         itemListAdapter = ItemListAdapter(this)
         item_list.adapter = itemListAdapter
         itemsModel = ViewModelProvider(this).get(ItemListViewModel::class.java)
-        RemoteDataSource.setItems(itemListAdapter)
-        itemListAdapter.onValueChanged = { oldValue, newValue ->
-            Thread(Runnable {
-                if(!newValue.equals("")){
-                    getActivity()?.runOnUiThread(java.lang.Runnable {
-                        Toast.makeText(activity,newValue,Toast.LENGTH_LONG).show()
-                        itemsModel.refresh()
-                    })
 
-                }
-            }).start()
-
-        }
-        itemsModel.items.observe(viewLifecycleOwner) { items ->
+        itemsModel.items.observe(viewLifecycleOwner) {
             Log.v("ItemListFragment", "update items")
-            itemListAdapter.items = items
+            itemListAdapter.items = it
         }
 
-        itemsModel.loading.observe(viewLifecycleOwner) { loading ->
+        itemsModel.loading.observe(viewLifecycleOwner) {
             Log.i("ItemListFragment", "update loading")
-            fetchProgress.visibility = if (loading) View.VISIBLE else View.GONE
+            fetchProgress.visibility = if (it) View.VISIBLE else View.GONE
         }
-        itemsModel.loadingError.observe(viewLifecycleOwner) { exception ->
-            if (exception != null) {
+        itemsModel.loadingError.observe(viewLifecycleOwner) {
+            if (it != null) {
                 Log.i("ItemListFragment", "update loading error")
-                val message = "Loading exception ${exception.message}"
+                val message = "Loading exception ${it.message}"
                 Toast.makeText(activity, message, Toast.LENGTH_LONG).show()
             }
         }
-
         itemsModel.refresh()
     }
 

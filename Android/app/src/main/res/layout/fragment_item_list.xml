@@ -25,7 +25,23 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="80dp"
+        app:backgroundTint="@color/colorPrimaryDark"
+        app:srcCompat="@drawable/add_24px" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/logoutBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        app:srcCompat="@android:drawable/ic_dialog_email" />
+        android:clickable="true"
+        android:focusable="auto"
+        android:src="@drawable/exit_to_app_24px"
+        android:text="@string/logout"
+        app:backgroundTint="@color/colorPrimaryDark" />
 
 </FrameLayout>

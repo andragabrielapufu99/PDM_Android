@@ -11,10 +11,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import androidx.navigation.fragment.findNavController
 import com.example.puffy.myapplication.R
+import com.example.puffy.myapplication.auth.data.AuthRepository
 import com.example.puffy.myapplication.common.RemoteDataSource
 import com.example.puffy.myapplication.todo.data.Item
 import com.example.puffy.myapplication.todo.items.ItemListViewModel
 import kotlinx.android.synthetic.main.fragment_item_edit.*
+import kotlinx.android.synthetic.main.fragment_item_edit.logoutBtn
+import kotlinx.android.synthetic.main.fragment_item_list.*
 
 class ItemEditFragment  : Fragment(){
 
@@ -65,25 +68,29 @@ class ItemEditFragment  : Fragment(){
                 viewModel.saveOrUpdateItem(i)
             }
         }
+        logoutBtn.setOnClickListener {
+            viewModel.logout()
+            findNavController().navigate(R.id.fragment_login)
+        }
     }
 
     private fun setupViewModel() {
         viewModel = ViewModelProvider(this).get(ItemEditViewModel::class.java)
 
-        viewModel.fetching.observe(viewLifecycleOwner) { fetching ->
+        viewModel.fetching.observe(viewLifecycleOwner) {
             Log.v("ItemEditFragment", "update fetching")
-            progress.visibility = if (fetching) View.VISIBLE else View.GONE
+            progress.visibility = if (it) View.VISIBLE else View.GONE
         }
 
-        viewModel.exception.observe(viewLifecycleOwner) { exception ->
-            if (exception != null) {
+        viewModel.exception.observe(viewLifecycleOwner) {
+            if (it != null) {
                 Log.v("ItemEditFragment", "update fetching error")
-                Toast.makeText(activity,exception.message,Toast.LENGTH_LONG).show()
+                Toast.makeText(activity,it.message,Toast.LENGTH_LONG).show()
             }
         }
 
-        viewModel.completed.observe(viewLifecycleOwner) { completed ->
-            if (completed) {
+        viewModel.completed.observe(viewLifecycleOwner) {
+            if (it) {
                 Log.v("ItemEditFragment", "completed, navigate back")
                 if(viewModel.exception.value == null){
                     findNavController().popBackStack()
@@ -93,17 +100,16 @@ class ItemEditFragment  : Fragment(){
 
         val id = itemId
         if (id == -1) {
-            item = Item(-1, "","",-1,"")
+            item = Item(-1, "","",-1,"", "")
         } else {
             if (id != null) {
-                viewModel.getById(id).observe(viewLifecycleOwner) {
-                    Log.v("ItemEditFragment", "update items")
-                    if (it != null) {
+                viewModel.getItemById(id).observe(viewLifecycleOwner){
+                    if(it != null){
                         item = it
-                        itemTitle.setText(it.title.toString())
-                        itemArtist.setText(it.artist.toString())
+                        itemTitle.setText(it.title)
+                        itemArtist.setText(it.artist)
                         itemYear.setText(it.year.toString())
-                        itemGenre.setText(it.genre.toString())
+                        itemGenre.setText(it.genre)
                     }
                 }
             }

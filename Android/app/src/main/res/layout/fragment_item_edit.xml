@@ -18,8 +18,23 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="80dp"
+        android:background="@color/colorAccent"
+        android:tint="#000000"
+        app:backgroundTint="@color/colorPrimaryDark"
         app:srcCompat="@android:drawable/ic_menu_save" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/logoutBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:clickable="true"
+        android:src="@drawable/exit_to_app_24px"
+        app:backgroundTint="@color/colorPrimaryDark" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -31,10 +46,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
-            android:layout_marginTop="200dp"
+            android:layout_marginTop="120dp"
             android:layout_marginRight="16dp"
             android:layout_marginBottom="16dp"
-            android:hint="Title" />
+            android:autofillHints=""
+            android:hint="@string/title"
+            android:inputType="text" />
 
         <EditText
             android:id="@+id/itemArtist"
@@ -43,7 +60,9 @@
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
             android:layout_marginBottom="16dp"
-            android:hint="Artist" />
+            android:hint="@string/artist"
+            android:inputType="text"
+            android:autofillHints="" />
 
         <EditText
             android:id="@+id/itemYear"
@@ -52,7 +71,9 @@
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
             android:layout_marginBottom="16dp"
-            android:hint="Year" />
+            android:hint="@string/year"
+            android:inputType="number"
+            android:autofillHints="" />
 
         <EditText
             android:id="@+id/itemGenre"
@@ -61,7 +82,10 @@
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
             android:layout_marginBottom="16dp"
-            android:hint="Genre" />
+            android:hint="@string/genre"
+            android:inputType="text"
+            android:autofillHints="" />
+
     </LinearLayout>
 
 </FrameLayout>

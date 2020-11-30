@@ -6,40 +6,35 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.puffy.myapplication.auth.data.AuthRepository
+import com.example.puffy.myapplication.common.Api
 import com.example.puffy.myapplication.common.MyResult
 import com.example.puffy.myapplication.common.RemoteDataSource
 import com.example.puffy.myapplication.todo.data.Item
-import com.example.puffy.myapplication.todo.data.remote.ItemApi
-import com.google.gson.JsonParser
+import com.example.puffy.myapplication.todo.data.ItemRepository
+import com.example.puffy.myapplication.todo.data.local.TodoDatabase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import retrofit2.HttpException
+import org.json.JSONObject
 
 class ItemListViewModel(application: Application) : AndroidViewModel(application) {
-    private val mutableItems = MutableLiveData<List<Item>>().apply { value = null }
     private val mutableLoading = MutableLiveData<Boolean>().apply { value = false }
     private val mutableException = MutableLiveData<Exception>().apply { value = null }
 
-    val items: LiveData<List<Item>> = mutableItems
+    var items: LiveData<List<Item>>
     val loading : LiveData<Boolean> = mutableLoading
     val loadingError : LiveData<Exception> = mutableException
 
+    val itemRepository : ItemRepository
+    val tokenDao = TodoDatabase.getDatabase(application,viewModelScope).tokenDao()
     init {
         Log.v("ItemListViewModel","init")
-        mutableItems.value = emptyList()
-    }
-
-    suspend fun getAll() : MyResult<List<Item>>{
-        try{
-            val result : List<Item> = ItemApi.service.getAll()
-            mutableItems.value = result
-            return MyResult.Success(result)
-        }catch (e : HttpException){
-            val message : String? = e.response()?.errorBody()?.string()
-            val m = JsonParser().parse(message)
-            val ex = Exception(m.asJsonObject["message"].asString)
-            return MyResult.Error(ex)
-        }
+        val itemDao = TodoDatabase.getDatabase(application, viewModelScope).itemDao()
+        itemRepository = ItemRepository(itemDao)
+        items = itemRepository.items
+        CoroutineScope(Dispatchers.Main).launch { ws() }
     }
 
     fun refresh() {
@@ -47,8 +42,7 @@ class ItemListViewModel(application: Application) : AndroidViewModel(application
             Log.v("ItemListView", "refresh...");
             mutableLoading.value = true
             mutableException.value = null
-            val result : MyResult<List<Item>> = getAll()
-            when (result) {
+            when (val result = itemRepository.refresh()) {
                 is MyResult.Success -> {
                     Log.d("ItemListViewModel", "refresh succeeded");
                 }
@@ -59,5 +53,38 @@ class ItemListViewModel(application: Application) : AndroidViewModel(application
             }
             mutableLoading.value = false
         }
+    }
+
+    private suspend fun ws(){
+        while (true){
+            val event = RemoteDataSource.eventChannel.receive()
+            val jsonObject = JSONObject(event)
+            val eventType = jsonObject.get("event")
+            val payload = jsonObject.get("payload")
+            val itemObj = JSONObject(payload.toString())
+            var item = Item(
+                itemObj.getInt("id"),
+                itemObj.getString("title"),
+                itemObj.getString("artist"),
+                itemObj.getInt("year"),
+                itemObj.getString("genre"),
+                itemObj.getString("userId"))
+            if(eventType == "created"){
+                itemRepository.addItemLocal(item)
+            }
+            else if(eventType == "updated"){
+                itemRepository.updateItemLocal(item)
+            }
+        }
+    }
+
+    fun logout(){
+        runBlocking {
+            tokenDao.deleteAll()
+            itemRepository.deleteAllItemsLocal()
+            AuthRepository.token = null
+            Api.tokenInterceptor.token = null
+        }
+
     }
 }
