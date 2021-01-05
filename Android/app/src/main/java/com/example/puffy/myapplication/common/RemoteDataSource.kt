@@ -45,6 +45,7 @@ object RemoteDataSource {
         }
 
         override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+            Log.d("WebSocket","onClosing")
         }
     }
 }

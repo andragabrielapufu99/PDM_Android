@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -10,47 +9,71 @@
     <SearchView
         android:id="@+id/searchBar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top"
+        android:layout_height="64dp"
+        android:layout_below="@id/logoutBtn"
+        android:layout_alignParentTop="false"
+        android:layout_alignParentBottom="false"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="0dp"
         android:inputType="textFilter"
-        android:queryHint="Enter text..." />
+        android:queryHint="Enter text..."
+        android:visibility="visible"
+        tools:visibility="visible">
+
+    </SearchView>
 
     <ProgressBar
         android:id="@+id/fetchProgress"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:indeterminate="true"
-        android:visibility="gone" />
+        android:visibility="gone"
+        tools:visibility="gone" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/item_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="60dp"
-        app:layoutManager="LinearLayoutManager" />
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="false"
+        android:layout_marginTop="25dp"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
+        android:id="@+id/addBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="80dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="false"
+        android:layout_gravity="end"
+        android:layout_marginStart="242dp"
+        android:layout_marginLeft="242dp"
+        android:layout_marginTop="540dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="246dp"
+        android:contentDescription="TODO"
+        android:tint="#FFFFFF"
         app:backgroundTint="@color/colorPrimaryDark"
-        app:srcCompat="@drawable/add_24px" />
+        app:fabSize="auto"
+        app:srcCompat="@drawable/add_24px"
+        tools:ignore="VectorDrawableCompat" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/logoutBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
+        android:layout_below="@id/addBtn"
+        android:layout_alignParentRight="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
         android:clickable="true"
+        android:contentDescription="TODO"
         android:focusable="auto"
         android:src="@drawable/exit_to_app_24px"
         android:text="@string/logout"
+        android:tint="#FFFFFF"
         app:backgroundTint="@color/colorPrimaryDark" />
 
-</FrameLayout>
+</RelativeLayout>

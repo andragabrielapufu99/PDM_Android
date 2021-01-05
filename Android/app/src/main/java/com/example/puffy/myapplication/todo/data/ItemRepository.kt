@@ -1,17 +1,32 @@
 package com.example.puffy.myapplication.todo.data
 
-import android.app.LauncherActivity
 import androidx.lifecycle.LiveData
-import com.example.puffy.myapplication.auth.data.TokenHolder
 import com.example.puffy.myapplication.common.MyResult
 import com.example.puffy.myapplication.todo.data.local.ItemDao
-import com.example.puffy.myapplication.todo.data.local.TokenDao
 import com.example.puffy.myapplication.todo.data.remote.ItemApi
 import retrofit2.HttpException
 import java.lang.Exception
 
-class ItemRepository(private val itemDao: ItemDao) {
-    val items : LiveData<List<Item>> = itemDao.getAll() //listener la db
+object ItemRepository {
+    private lateinit var itemDao: ItemDao
+    lateinit var items : LiveData<List<Item>>
+    var itemsAddLocal : MutableList<Item> = ArrayList()
+    var itemsUpdatedLocal : MutableList<Item> = ArrayList()
+    private var networkStatus : Boolean = false
+
+    fun setItemDao(itemDao : ItemDao){
+        this.itemDao = itemDao
+        items = this.itemDao.getAll() //listener la db
+    }
+
+    fun setNetworkStatus(status : Boolean){
+        networkStatus = status
+    }
+
+    fun getNetworkStatus() : Boolean{
+        return networkStatus
+    }
+
     suspend fun refresh() : MyResult<Boolean> {
         try{
             val items = ItemApi.service.getAll() //date de pe server
@@ -35,10 +50,19 @@ class ItemRepository(private val itemDao: ItemDao) {
 
     suspend fun addItem(item : Item) : MyResult<Item>{
         try{
-            val result = ItemApi.service.addItem(item)
-            return MyResult.Success(result)
+            if(networkStatus){
+                val result = ItemApi.service.addItem(item)
+                return MyResult.Success(result)
+            }
+            addItemLocal(item)
+            itemsAddLocal.add(item)
+            return MyResult.Success(item)
         }catch(ex : Exception){
             if(ex is HttpException){
+                var errCode: Int? = ex.response()?.code()
+                if(errCode == 409){
+                    return MyResult.Error(ex)
+                }
                 val message : String? = ex.response()?.errorBody()?.string()
                 val e = Exception(message)
                 return MyResult.Error(e)
@@ -54,10 +78,16 @@ class ItemRepository(private val itemDao: ItemDao) {
     suspend fun updateItemLocal(item : Item){
         itemDao.update(item)
     }
+
     suspend fun updateItem(itemId : Int, item : Item) : MyResult<Item>{
         try{
-            val result = ItemApi.service.updateItem(itemId,item)
-            return MyResult.Success(result)
+            if(networkStatus){
+                val result = ItemApi.service.updateItem(itemId,item)
+                return MyResult.Success(result)
+            }
+            updateItemLocal(item)
+            itemsUpdatedLocal.add(item)
+            return MyResult.Success(item)
         }catch(ex : Exception){
             if(ex is HttpException){
                 val message : String? = ex.response()?.errorBody()?.string()

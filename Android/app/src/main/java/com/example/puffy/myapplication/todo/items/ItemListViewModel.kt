@@ -2,10 +2,7 @@ package com.example.puffy.myapplication.todo.items
 
 import android.app.Application
 import android.util.Log
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.example.puffy.myapplication.auth.data.AuthRepository
 import com.example.puffy.myapplication.common.Api
 import com.example.puffy.myapplication.common.MyResult
@@ -22,37 +19,52 @@ import org.json.JSONObject
 class ItemListViewModel(application: Application) : AndroidViewModel(application) {
     private val mutableLoading = MutableLiveData<Boolean>().apply { value = false }
     private val mutableException = MutableLiveData<Exception>().apply { value = null }
+    private val mutableNetworkStatus = MutableLiveData<Boolean>()
+    private val tagName: String = "ItemListViewModel"
+    private val tokenDao = TodoDatabase.getDatabase(application,viewModelScope).tokenDao()
 
+    //public
     var items: LiveData<List<Item>>
     val loading : LiveData<Boolean> = mutableLoading
     val loadingError : LiveData<Exception> = mutableException
-
-    val itemRepository : ItemRepository
-    val tokenDao = TodoDatabase.getDatabase(application,viewModelScope).tokenDao()
+    val networkStatus : LiveData<Boolean> = mutableNetworkStatus
 
     init {
-        Log.v("ItemListViewModel","init")
+        Log.v(tagName,"init")
         val itemDao = TodoDatabase.getDatabase(application, viewModelScope).itemDao()
-        itemRepository = ItemRepository(itemDao)
-        items = itemRepository.items
-        CoroutineScope(Dispatchers.Main).launch { ws() }
+        ItemRepository.setItemDao(itemDao)
+        items = ItemRepository.items
+        if (networkStatus.value == true){
+            CoroutineScope(Dispatchers.Main).launch { ws() }
+            ItemRepository.setNetworkStatus(true)
+        }else{
+            ItemRepository.setNetworkStatus(false)
+        }
+    }
+
+    fun setNetworkStatus(status : Boolean){
+        mutableNetworkStatus.postValue(status)
+        ItemRepository.setNetworkStatus(status)
+        if (networkStatus.value == true){
+            CoroutineScope(Dispatchers.Main).launch { ws() }
+        }
     }
 
     fun refreshLocal() : List<Item>? {
-        return itemRepository.items.value
+        return ItemRepository.items.value
     }
 
     fun refresh() {
         viewModelScope.launch {
-            Log.v("ItemListView", "refresh...");
+            Log.v(tagName, "Refresh");
             mutableLoading.value = true
             mutableException.value = null
-            when (val result = itemRepository.refresh()) {
+            when (val result = ItemRepository.refresh()) {
                 is MyResult.Success -> {
-                    Log.d("ItemListViewModel", "refresh succeeded");
+                    Log.d(tagName, "Refresh succeeded");
                 }
                 is MyResult.Error -> {
-                    Log.w("ItemListViewModel", "refresh failed", result.exception);
+                    Log.w(tagName, "Refresh failed", result.exception);
                     mutableException.value = result.exception
                 }
             }
@@ -73,12 +85,13 @@ class ItemListViewModel(application: Application) : AndroidViewModel(application
                 itemObj.getString("artist"),
                 itemObj.getInt("year"),
                 itemObj.getString("genre"),
-                itemObj.getString("userId"))
+                itemObj.getString("userId"),
+                itemObj.getString("pathImage"))
             if(eventType == "created"){
-                itemRepository.addItemLocal(item)
+                ItemRepository.addItemLocal(item)
             }
             else if(eventType == "updated"){
-                itemRepository.updateItemLocal(item)
+                ItemRepository.updateItemLocal(item)
             }
         }
     }
@@ -86,7 +99,7 @@ class ItemListViewModel(application: Application) : AndroidViewModel(application
     fun logout(){
         runBlocking {
             tokenDao.deleteAll()
-            itemRepository.deleteAllItemsLocal()
+            ItemRepository.deleteAllItemsLocal()
             AuthRepository.token = null
             Api.tokenInterceptor.token = null
         }

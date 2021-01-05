@@ -1,6 +1,8 @@
 package com.example.puffy.myapplication.auth.login
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -18,15 +20,30 @@ import com.example.puffy.myapplication.common.Api
 import com.example.puffy.myapplication.common.MyResult
 import com.example.puffy.myapplication.common.RemoteDataSource
 import kotlinx.android.synthetic.main.fragment_login.*
+import kotlinx.android.synthetic.main.main_activity.*
 import org.json.JSONObject
 
 class LoginFragment : Fragment() {
     private lateinit var viewModel : LoginViewModel
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        //from MainActivity
+        var statusOnlineTextView = requireActivity().statusOnline
+        var statusOfflineTextView = requireActivity().statusOffline
+        var statusOnlineImageView = requireActivity().statusImageOnline
+        var statusOfflineImageView = requireActivity().statusImageOffline
+        val handler = Handler(Looper.getMainLooper())
+        handler.post(Runnable {
+            // UI code goes here
+            statusOfflineTextView.visibility = View.INVISIBLE
+            statusOfflineImageView.visibility = View.INVISIBLE
+            statusOnlineTextView.visibility = View.INVISIBLE
+            statusOnlineImageView.visibility = View.INVISIBLE
+        })
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_login,container,false)
     }
 

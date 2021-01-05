@@ -43,6 +43,9 @@ const Item = new Schema({
         type : String,
         required : true
     },
+    pathImage : {
+        type : String
+    },
     userId : {
         type : String
     }

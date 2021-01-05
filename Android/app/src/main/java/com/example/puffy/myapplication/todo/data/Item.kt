@@ -11,7 +11,8 @@ data class Item (
     @ColumnInfo(name = "artist") var artist : String,
     @ColumnInfo(name = "year") var year : Int,
     @ColumnInfo(name = "genre") var genre : String,
-    @ColumnInfo(name = "userId") var userId : String?
+    @ColumnInfo(name = "userId") var userId : String?,
+    @ColumnInfo(name = "pathImage") var pathImage : String?
 ){
     override fun toString(): String =
         "Title : $title\nArtist : $artist\nYear : $year\nGenre : $genre"

@@ -11,7 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [TokenHolder::class,Item::class], version = 1)
+@Database(entities = [TokenHolder::class,Item::class], version = 3)
 abstract class TodoDatabase : RoomDatabase() {
 
     abstract fun tokenDao() : TokenDao

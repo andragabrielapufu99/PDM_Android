@@ -12,4 +12,6 @@
     <string name="login">Login</string>
     <string name="welcomeLabel">Welcome!</string>
     <string name="logout">Logout</string>
+    <string name="onlineMessage">You are online !</string>
+    <string name="not_image">No image :(</string>
 </resources>
