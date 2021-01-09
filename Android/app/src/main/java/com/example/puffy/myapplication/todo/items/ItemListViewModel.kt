@@ -86,7 +86,9 @@ class ItemListViewModel(application: Application) : AndroidViewModel(application
                 itemObj.getInt("year"),
                 itemObj.getString("genre"),
                 itemObj.getString("userId"),
-                itemObj.getString("pathImage"))
+                itemObj.getString("pathImage"),
+                itemObj.getDouble("latitude"),
+                itemObj.getDouble("longitude"))
             if(eventType == "created"){
                 ItemRepository.addItemLocal(item)
             }

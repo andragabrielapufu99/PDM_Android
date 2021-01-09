@@ -6,8 +6,8 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object Api {
-    //private const val baseURL = "192.168.1.101:3000" //Cluj
-    const val baseURL = "192.168.1.102:3000" //Mioveni
+    const val baseURL = "192.168.1.104:3000" //Cluj
+    //const val baseURL = "192.168.1.102:3000" //Mioveni
     //const val baseURL = "192.168.43.94:3000" //hotspot
     private const val URL = "http://$baseURL"
 

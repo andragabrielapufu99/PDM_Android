@@ -5,12 +5,10 @@ import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
-import android.provider.OpenableColumns
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -26,6 +24,8 @@ import androidx.navigation.fragment.findNavController
 import com.example.puffy.myapplication.R
 import com.example.puffy.myapplication.todo.data.Item
 import com.example.puffy.myapplication.todo.data.ItemRepository
+import com.example.puffy.myapplication.todo.items.ViewMapsActivity
+import com.google.android.gms.maps.model.LatLng
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_item_edit.*
 import java.io.ByteArrayOutputStream
@@ -51,6 +51,7 @@ class ItemEditFragment  : Fragment(){
     private val REQUEST_CODE_PERMISSION = 10
     private val REQUEST_CAPTURE_IMAGE = 1
     private val REQUEST_PICK_IMAGE = 2
+    private val REQUEST_LOCATION = 3
 
     lateinit var currentPhotoPath : String
 
@@ -139,6 +140,14 @@ class ItemEditFragment  : Fragment(){
                     item?.pathImage = file.path
                 }
                 imageView.setImageURI(uri)
+            }else if(requestCode == REQUEST_LOCATION){
+                val obj = data?.extras?.get("location")
+                if(obj != null){
+                    val location = obj as LatLng
+                    item?.latitude = location.latitude
+                    item?.longitude = location.longitude
+                }
+
             }
         }
     }
@@ -228,6 +237,14 @@ class ItemEditFragment  : Fragment(){
         pickPhoto.setOnClickListener{
             openGallery()
         }
+        mapBtn.setOnClickListener{
+            val intent : Intent = Intent(context, EditMapsActivity::class.java)
+            val location = item?.latitude?.let { it1 -> item!!.longitude?.let { it2 ->
+                LatLng(it1, it2) } }
+            intent.putExtra("location", location)
+            startActivityForResult(intent, REQUEST_LOCATION)
+            //startActivityForResult(Intent(context, EditMapsActivity::class.java), REQUEST_LOCATION)
+        }
 
     } //end onActivityCreated
 
@@ -260,7 +277,7 @@ class ItemEditFragment  : Fragment(){
 
         val id = itemId
         if (id == -1) {
-            item = Item(-1, "", "", -1, "", "", "")
+            item = Item(-1, "", "", -1, "", "", "", null, null)
         } else {
             if (id != null) {
                 viewModel.getItemById(id).observe(viewLifecycleOwner){

@@ -64,6 +64,18 @@
         android:tint="#FFFFFF"
         app:backgroundTint="@color/colorPrimaryDark" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/mapBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_marginTop="350dp"
+        android:layout_marginEnd="152dp"
+        android:layout_marginRight="152dp"
+        android:clickable="true"
+        android:src="@android:drawable/ic_dialog_map"
+        app:backgroundTint="@color/colorPrimaryDark" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"

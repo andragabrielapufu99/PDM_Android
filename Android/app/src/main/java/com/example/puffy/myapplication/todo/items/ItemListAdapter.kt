@@ -1,14 +1,17 @@
 package com.example.puffy.myapplication.todo.items
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.SearchView
 import android.widget.TextView
+import androidx.core.content.ContextCompat.startActivity
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -16,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.puffy.myapplication.R
 import com.example.puffy.myapplication.todo.data.Item
 import com.example.puffy.myapplication.todo.item.ItemEditFragment
+import com.google.android.gms.maps.model.LatLng
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.view_item_list.view.*
 import java.io.File
@@ -49,6 +53,7 @@ class ItemListAdapter(private val fragment: Fragment) : RecyclerView.Adapter<Ite
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val imageView: ImageView = view.imageView
         val textView: TextView = view.text
+        val viewLocationBtn: Button = view.viewLocation
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -89,7 +94,22 @@ class ItemListAdapter(private val fragment: Fragment) : RecyclerView.Adapter<Ite
         }
         holder.textView.text = item.toString()
         holder.itemView.setOnClickListener(onItemClick)
+        if(!(item.latitude != null && item.longitude != null)){
+            holder.viewLocationBtn.visibility = View.GONE
+        }else{
+            holder.viewLocationBtn.visibility = View.VISIBLE
+        }
+        holder.viewLocationBtn.setOnClickListener{
+            item.latitude?.let { it1 -> item.longitude?.let { it2 -> seeLocation(it1, it2) } }
+        }
         searchBar?.bringToFront()
+    }
+
+    private fun seeLocation(latitude : Double, longitude : Double){
+        val intent : Intent = Intent(fragment.activity, ViewMapsActivity::class.java)
+        val location = LatLng(latitude, longitude)
+        intent.putExtra("location", location)
+        fragment.context?.startActivity(intent)
     }
 
     fun filterByText(text : String) : Boolean{

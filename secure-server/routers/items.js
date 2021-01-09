@@ -13,6 +13,8 @@ const convertItem = async (itemBd) => {
     item['genre'] = itemBd.genre;
     item['pathImage'] = itemBd.pathImage;
     item['userId'] = itemBd.userId;
+    item['latitude'] = itemBd.latitude;
+    item['longitude'] = itemBd.longitude;
     return item;
 };
 

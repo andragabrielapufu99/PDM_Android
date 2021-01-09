@@ -24,7 +24,10 @@ class MyWorker(context: Context, workerParams: WorkerParameters) : Worker(contex
             itemObj.getInt("year"),
             itemObj.getString("genre"),
             itemObj.getString("userId"),
-            itemObj.getString("pathImage"))
+            itemObj.getString("pathImage"),
+            itemObj.getDouble("latitude"),
+            itemObj.getDouble("longitude")
+            )
         println("Woker : eventType $eventType")
         if(eventType == "created"){
             runBlocking {

@@ -14,4 +14,7 @@
     <string name="logout">Logout</string>
     <string name="onlineMessage">You are online !</string>
     <string name="not_image">No image :(</string>
+    <string name="title_activity_maps">Edit delivery address</string>
+    <string name="map_view_btn_desc">Delivery address</string>
+    <string name="title_activity_view_maps">View delivery address</string>
 </resources>

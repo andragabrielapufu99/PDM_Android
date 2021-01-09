@@ -12,7 +12,9 @@ data class Item (
     @ColumnInfo(name = "year") var year : Int,
     @ColumnInfo(name = "genre") var genre : String,
     @ColumnInfo(name = "userId") var userId : String?,
-    @ColumnInfo(name = "pathImage") var pathImage : String?
+    @ColumnInfo(name = "pathImage") var pathImage : String?,
+    @ColumnInfo(name = "latitude") var latitude : Double?,
+    @ColumnInfo(name = "longitude") var longitude : Double?
 ){
     override fun toString(): String =
         "Title : $title\nArtist : $artist\nYear : $year\nGenre : $genre"
