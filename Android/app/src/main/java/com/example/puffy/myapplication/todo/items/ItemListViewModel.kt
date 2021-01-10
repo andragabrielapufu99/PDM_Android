@@ -79,16 +79,56 @@ class ItemListViewModel(application: Application) : AndroidViewModel(application
             val eventType = jsonObject.get("event")
             val payload = jsonObject.get("payload")
             val itemObj = JSONObject(payload.toString())
-            var item = Item(
-                itemObj.getInt("id"),
-                itemObj.getString("title"),
-                itemObj.getString("artist"),
-                itemObj.getInt("year"),
-                itemObj.getString("genre"),
-                itemObj.getString("userId"),
-                itemObj.getString("pathImage"),
-                itemObj.getDouble("latitude"),
-                itemObj.getDouble("longitude"))
+            var item : Item? = null
+            if(itemObj.has("pathImage")){
+                if(itemObj.has("latitude") && itemObj.has("longitude")){
+                    item = Item(
+                        itemObj.getInt("id"),
+                        itemObj.getString("title"),
+                        itemObj.getString("artist"),
+                        itemObj.getInt("year"),
+                        itemObj.getString("genre"),
+                        itemObj.getString("userId"),
+                        itemObj.getString("pathImage"),
+                        itemObj.getDouble("latitude"),
+                        itemObj.getDouble("longitude"))
+                }else{
+                    item = Item(
+                        itemObj.getInt("id"),
+                        itemObj.getString("title"),
+                        itemObj.getString("artist"),
+                        itemObj.getInt("year"),
+                        itemObj.getString("genre"),
+                        itemObj.getString("userId"),
+                        itemObj.getString("pathImage"),
+                        null,
+                        null)
+                }
+            }else{
+                if(itemObj.has("latitude") && itemObj.has("longitude")){
+                    item = Item(
+                        itemObj.getInt("id"),
+                        itemObj.getString("title"),
+                        itemObj.getString("artist"),
+                        itemObj.getInt("year"),
+                        itemObj.getString("genre"),
+                        itemObj.getString("userId"),
+                       null,
+                        itemObj.getDouble("latitude"),
+                        itemObj.getDouble("longitude"))
+                }else{
+                    item = Item(
+                        itemObj.getInt("id"),
+                        itemObj.getString("title"),
+                        itemObj.getString("artist"),
+                        itemObj.getInt("year"),
+                        itemObj.getString("genre"),
+                        itemObj.getString("userId"),
+                        null,
+                        null,
+                        null)
+                }
+            }
             if(eventType == "created"){
                 ItemRepository.addItemLocal(item)
             }

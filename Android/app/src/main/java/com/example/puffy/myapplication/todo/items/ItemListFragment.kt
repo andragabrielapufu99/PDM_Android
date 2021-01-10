@@ -126,6 +126,7 @@ class ItemListFragment : Fragment() {
         connectivityManager.unregisterNetworkCallback(networkCallback)
     }
 
+    @SuppressLint("ResourceAsColor")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         Log.v(tagName, "onActivityCreated")
@@ -138,7 +139,7 @@ class ItemListFragment : Fragment() {
         //add
         addBtn.setOnClickListener {
             Log.v(tagName, "Click on add button")
-            findNavController().navigate(R.id.fragment_item_edit)
+            findNavController().navigate(R.id.action_ItemListFragment_to_ItemEditFragment)
         }
 
         //logout
@@ -195,18 +196,20 @@ class ItemListFragment : Fragment() {
         }
 
         itemsModel.networkStatus.observe(viewLifecycleOwner) {
-            if(it == true){
-                startWokers()
-                itemsModel.refresh()
-            }else if(it == false){
+            if(it){
+                if(!ItemRepository.needWorkers){
+                    itemsModel.refresh()
+                }else{
+                    println("Start workers")
+                    startWokers()
+                }
+            }else if(!it){
                 itemsModel.refreshLocal()
                 Toast.makeText(
                     activity,
                     "You're not connected to server. All operations will be done on local data and we will send as soon as we can to server.",
                     Toast.LENGTH_LONG
                 ).show()
-            }else{
-                itemsModel.refreshLocal()
             }
         }
     }
@@ -219,8 +222,8 @@ class ItemListFragment : Fragment() {
     fun startWokers(){
         ItemRepository.itemsAddLocal.forEach{ item -> startOneWorker(item, "created")}
         ItemRepository.itemsUpdatedLocal.forEach{ item -> startOneWorker(item, "updated")}
-        ItemRepository.itemsAddLocal = ArrayList()
-        ItemRepository.itemsUpdatedLocal = ArrayList()
+//        ItemRepository.itemsAddLocal = ArrayList()
+//        ItemRepository.itemsUpdatedLocal = ArrayList()
     }
 
     @SuppressLint("RestrictedApi")
@@ -236,7 +239,8 @@ class ItemListFragment : Fragment() {
         itemObj.put("genre", item.genre)
         itemObj.put("userId", item.userId)
         itemObj.put("pathImage", item.pathImage)
-
+        itemObj.put("latitude", item.latitude)
+        itemObj.put("longitude", item.longitude)
         jsonObj.put("item", itemObj)
 
         val constraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build() //connectat
@@ -250,7 +254,10 @@ class ItemListFragment : Fragment() {
             WorkManager.getInstance(it.applicationContext).apply {
                 enqueue(myWork)
                 getWorkInfoByIdLiveData(workId).observe(viewLifecycleOwner) { status ->
-                    val isFinished = status?.state?.isFinished
+                    val isFinished : Boolean = status?.state?.isFinished == true
+                    if(isFinished){
+
+                    }
                     println("Status : $status")
                 }
             }

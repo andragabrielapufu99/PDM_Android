@@ -1,27 +1,26 @@
 package com.example.puffy.myapplication.auth.login
 
+import android.animation.Animator
+import android.animation.AnimatorSet
+import android.animation.ValueAnimator
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.Toast
+import android.widget.ViewAnimator
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import androidx.navigation.fragment.findNavController
 import com.example.puffy.myapplication.R
-import com.example.puffy.myapplication.auth.data.AuthRepository
-import com.example.puffy.myapplication.common.Api
-import com.example.puffy.myapplication.common.MyResult
-import com.example.puffy.myapplication.common.RemoteDataSource
 import kotlinx.android.synthetic.main.fragment_login.*
 import kotlinx.android.synthetic.main.main_activity.*
-import org.json.JSONObject
+
 
 class LoginFragment : Fragment() {
     private lateinit var viewModel : LoginViewModel
@@ -43,8 +42,12 @@ class LoginFragment : Fragment() {
         })
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_login,container,false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.fragment_login, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -64,15 +67,16 @@ class LoginFragment : Fragment() {
         viewModel.loginError.observe(viewLifecycleOwner) {
             if(it != null){
                 loading.visibility = View.GONE
-                Toast.makeText(activity,it.message, Toast.LENGTH_LONG).show()
+                Toast.makeText(activity, it.message, Toast.LENGTH_LONG).show()
             }else{
-                viewModel.login(username.text.toString(),password.text.toString())
+                viewModel.login(username.text.toString(), password.text.toString())
             }
         }
 
         loginBtn.setOnClickListener{
             loading.visibility = View.VISIBLE
-            viewModel.loginDataChanged(username.text.toString(),password.text.toString())
+            viewModel.loginDataChanged(username.text.toString(), password.text.toString())
         }
     }
 }
+

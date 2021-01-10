@@ -7,10 +7,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.SearchView
-import android.widget.TextView
+import android.view.animation.AnimationSet
+import android.widget.*
 import androidx.core.content.ContextCompat.startActivity
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
@@ -35,6 +33,7 @@ class ItemListAdapter(private val fragment: Fragment) : RecyclerView.Adapter<Ite
     private lateinit var onItemClick : View.OnClickListener
     private val tagName: String = "ItemListAdapter"
     private var searchBar: SearchView?
+    private var progressBar: ProgressBar?
 
     init {
         //click on an item
@@ -42,12 +41,13 @@ class ItemListAdapter(private val fragment: Fragment) : RecyclerView.Adapter<Ite
             val item = view.tag as Item
 
             //navigate to item edit fragment
-            fragment.findNavController().navigate(R.id.fragment_item_edit, Bundle().apply {
+            fragment.findNavController().navigate(R.id.action_ItemListFragment_to_ItemEditFragment, Bundle().apply {
                 putInt(ItemEditFragment.ITEM_ID, item.id)
             })
 
         }
         searchBar = fragment.activity?.findViewById(R.id.searchBar)
+        progressBar = fragment.activity?.findViewById(R.id.fetchProgress)
     }
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -72,25 +72,29 @@ class ItemListAdapter(private val fragment: Fragment) : RecyclerView.Adapter<Ite
         val item = items[position]
         holder.itemView.tag = item
         holder.imageView.setImageURI(null)
+        holder.imageView.visibility = View.GONE
         if(item.pathImage?.isNotEmpty() == true){
             val file = File(item.pathImage)
-            var uri : Uri?
-            file.also {
-                uri = it?.let { it1 ->
-                    fragment.context?.let { it2 ->
-                        FileProvider.getUriForFile(
-                            it2,
-                            "com.example.puffy.myapplication.fileprovider",
-                            it1
-                        )
+            if(file.exists()){
+                var uri : Uri?
+                file.also {
+                    uri = it?.let { it1 ->
+                        fragment.context?.let { it2 ->
+                            FileProvider.getUriForFile(
+                                it2,
+                                "com.example.puffy.myapplication.fileprovider",
+                                it1
+                            )
+                        }
                     }
                 }
+                Picasso
+                    .with(fragment.context)
+                    .load(uri)
+                    //.rotate(90F)
+                    .into(holder.imageView)
+                holder.imageView.visibility = View.VISIBLE
             }
-            Picasso
-                .with(fragment.context)
-                .load(uri)
-                //.rotate(90F)
-                .into(holder.imageView)
         }
         holder.textView.text = item.toString()
         holder.itemView.setOnClickListener(onItemClick)
@@ -102,7 +106,9 @@ class ItemListAdapter(private val fragment: Fragment) : RecyclerView.Adapter<Ite
         holder.viewLocationBtn.setOnClickListener{
             item.latitude?.let { it1 -> item.longitude?.let { it2 -> seeLocation(it1, it2) } }
         }
+
         searchBar?.bringToFront()
+        progressBar?.bringToFront()
     }
 
     private fun seeLocation(latitude : Double, longitude : Double){

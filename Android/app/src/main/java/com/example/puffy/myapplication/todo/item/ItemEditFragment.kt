@@ -1,6 +1,7 @@
 package com.example.puffy.myapplication.todo.item
 
 import android.Manifest
+import android.animation.ValueAnimator
 import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -13,6 +14,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationSet
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -24,16 +26,17 @@ import androidx.navigation.fragment.findNavController
 import com.example.puffy.myapplication.R
 import com.example.puffy.myapplication.todo.data.Item
 import com.example.puffy.myapplication.todo.data.ItemRepository
-import com.example.puffy.myapplication.todo.items.ViewMapsActivity
 import com.google.android.gms.maps.model.LatLng
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_item_edit.*
+import kotlinx.coroutines.delay
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class ItemEditFragment  : Fragment(){
@@ -52,7 +55,7 @@ class ItemEditFragment  : Fragment(){
     private val REQUEST_CAPTURE_IMAGE = 1
     private val REQUEST_PICK_IMAGE = 2
     private val REQUEST_LOCATION = 3
-
+    private var errorsView : MutableList<View> = ArrayList()
     lateinit var currentPhotoPath : String
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,11 +66,43 @@ class ItemEditFragment  : Fragment(){
                 itemId = it.getInt(ITEM_ID)
             }
         }
+        shakeTextViews()
     } //end onCreate
+
+    private fun shakeTextViews(){
+        ValueAnimator.ofFloat(
+            0F, 25F, (-25).toFloat(), 25F, (-25).toFloat(), 15F,
+            (-15).toFloat(), 6F, (-6).toFloat(), 0F
+        ).apply {
+            duration = 1000
+            startDelay = 1000
+            start()
+            addUpdateListener {
+                itemTitle.translationX = it.animatedValue as Float
+                itemArtist.translationX = it.animatedValue as Float
+                itemYear.translationX = it.animatedValue as Float
+                itemGenre.translationX = it.animatedValue as Float
+            }
+        }
+    }
+
+    private fun shakeOneView(view: View){
+        ValueAnimator.ofFloat(
+            0F, 25F, (-25).toFloat(), 25F, (-25).toFloat(), 15F,
+            (-15).toFloat(), 6F, (-6).toFloat(), 0F
+        ).apply {
+            duration = 1000
+            start()
+            addUpdateListener {
+                view.translationX = it.animatedValue as Float
+            }
+        }
+    }
 
     override fun onResume() {
         super.onResume()
         checkPermissions()
+        shakeTextViews()
     }
 
     private fun checkPermissions(){
@@ -132,6 +167,7 @@ class ItemEditFragment  : Fragment(){
                 val uri = Uri.parse(currentPhotoPath)
                 item?.pathImage = currentPhotoPath
                 imageView.setImageURI(uri)
+                imageView.visibility = View.VISIBLE
 
             }else if(requestCode == REQUEST_PICK_IMAGE){
                 val uri = data?.data
@@ -140,6 +176,7 @@ class ItemEditFragment  : Fragment(){
                     item?.pathImage = file.path
                 }
                 imageView.setImageURI(uri)
+                imageView.visibility = View.VISIBLE
             }else if(requestCode == REQUEST_LOCATION){
                 val obj = data?.extras?.get("location")
                 if(obj != null){
@@ -178,23 +215,28 @@ class ItemEditFragment  : Fragment(){
     private fun validateItem(item: Item){
         var errors: String = ""
         var blacklist: String = "[,:?/.]"
+        errorsView = ArrayList()
         if(item.title.equals("") || item.title.contains(blacklist.toRegex()) || item.title.contains(
                 '\\'
             )){
             errors += "Title field cannot be empty or cannot contains the next caracters : , : ? / \\ . !"
+            errorsView.add(itemTitle)
         }
         if(item.artist.equals("") || item.artist.contains(blacklist.toRegex()) || item.artist.contains(
                 '\\'
             )){
             errors += "Artist field cannot be empty or cannot contains the next caracters : , : ? / \\ . !"
+            errorsView.add(itemArtist)
         }
         if(!(item.year >= 1000 && item.year.toInt() <= 9999)){
             errors += "Year field must be a positive number of 4 digits!"
+            errorsView.add(itemYear)
         }
         if(item.genre.equals("") || item.genre.contains(blacklist.toRegex()) || item.genre.contains(
                 '\\'
             )){
             errors += "Genre field cannot be empty or cannot contains the next caracters : , : ? / \\ . !"
+            errorsView.add(itemGenre)
         }
         if(!errors.equals("")){
             throw Exception(errors)
@@ -223,6 +265,7 @@ class ItemEditFragment  : Fragment(){
                     viewModel.saveOrUpdateItem(i)
                 }catch (e: Exception){
                     Toast.makeText(activity, e.message, Toast.LENGTH_LONG).show()
+                    errorsView.forEach{view -> shakeOneView(view)}
                 }
 
             }
@@ -243,7 +286,6 @@ class ItemEditFragment  : Fragment(){
                 LatLng(it1, it2) } }
             intent.putExtra("location", location)
             startActivityForResult(intent, REQUEST_LOCATION)
-            //startActivityForResult(Intent(context, EditMapsActivity::class.java), REQUEST_LOCATION)
         }
 
     } //end onActivityCreated
@@ -270,7 +312,7 @@ class ItemEditFragment  : Fragment(){
                     if(!ItemRepository.getNetworkStatus()){
                         Toast.makeText(activity, "Saved locally", Toast.LENGTH_SHORT).show()
                     }
-                    findNavController().popBackStack()
+                    findNavController().navigate(R.id.action_ItemEditFragment_to_ItemListFragment)
                 }
             }
         }
@@ -287,6 +329,7 @@ class ItemEditFragment  : Fragment(){
                         itemArtist.setText(it.artist)
                         itemYear.setText(it.year.toString())
                         itemGenre.setText(it.genre)
+                        imageView.visibility = View.GONE
                         if(it.pathImage?.isNotEmpty() == true){
                             val file = File(it.pathImage)
                             var uri : Uri?
@@ -306,6 +349,7 @@ class ItemEditFragment  : Fragment(){
                                 .load(uri)
                               //  .rotate(90F)
                                 .into(imageView)
+                            imageView.visibility = View.VISIBLE
                         }
                     }
                 }

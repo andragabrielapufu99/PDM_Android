@@ -1,5 +1,7 @@
 package com.example.puffy.myapplication.todo.data
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import com.example.puffy.myapplication.common.MyResult
 import com.example.puffy.myapplication.todo.data.local.ItemDao
@@ -12,6 +14,7 @@ object ItemRepository {
     lateinit var items : LiveData<List<Item>>
     var itemsAddLocal : MutableList<Item> = ArrayList()
     var itemsUpdatedLocal : MutableList<Item> = ArrayList()
+    var needWorkers : Boolean = itemsAddLocal.size > 0 || itemsUpdatedLocal.size > 0
     private var networkStatus : Boolean = false
 
     fun setItemDao(itemDao : ItemDao){
@@ -73,10 +76,26 @@ object ItemRepository {
 
     suspend fun addItemLocal(item : Item) {
         itemDao.insert(item)
+        needWorkers = true
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    fun removeItemListLocal(item : Item, eventType : String){
+        if(eventType == "created"){
+            println("Size before : ${itemsUpdatedLocal.size}")
+            itemsAddLocal.remove(item)
+            println("Size after : ${itemsUpdatedLocal.size}")
+        }else if(eventType == "updated"){
+            println("Size before : ${itemsUpdatedLocal.size}")
+            itemsUpdatedLocal.remove(item)
+            println("Size after : ${itemsUpdatedLocal.size}")
+        }
+        needWorkers = itemsAddLocal.size > 0 || itemsUpdatedLocal.size > 0
     }
 
     suspend fun updateItemLocal(item : Item){
         itemDao.update(item)
+        needWorkers = true
     }
 
     suspend fun updateItem(itemId : Int, item : Item) : MyResult<Item>{

@@ -13,7 +13,11 @@
         tools:layout="@layout/fragment_item_list">
         <action
             android:id="@+id/action_ItemListFragment_to_ItemEditFragment"
-            app:destination="@id/fragment_item_edit" />
+            app:destination="@id/fragment_item_edit"
+            app:enterAnim="@anim/from_right"
+            app:exitAnim="@anim/to_left"
+            app:popEnterAnim="@anim/from_left"
+            app:popExitAnim="@anim/to_right" />
     </fragment>
 
     <fragment
@@ -29,6 +33,8 @@
         tools:layout="@layout/fragment_item_edit">
         <action
             android:id="@+id/action_ItemEditFragment_to_ItemListFragment"
-            app:destination="@id/fragment_item_list" />
+            app:destination="@id/fragment_item_list"
+            app:enterAnim="@anim/from_left"
+            app:exitAnim="@anim/to_right" />
     </fragment>
 </navigation>
